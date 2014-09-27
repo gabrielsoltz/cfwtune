@@ -2,16 +2,18 @@ cfwtune
 =======
 
 Cisco Firewalls Tune (ACL Optimizer)
-Made In Argentina. Bash <3
+Made In Argentina.
 
 The simplest way to optimize Cisco Firewalls Configurations.
+Bash <3
 
-Compatibility (Tested)
+Functionality
 =======
-
-Cisco PIX Firewall (7.x/8.x)
-Cisco ASA Firewall (7.x/8.x)
-Cisco FWSM Firewall (3.x/4.x)
+1. Object-Group Subnetting Objects
+2. Object-Group Depurate (unused)
+3. ACL Misapplied
+4. ACL Without Apply
+5. ACL Shadow
 
 Compatibility (Tested)
 =======
