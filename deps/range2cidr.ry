@@ -1,0 +1,79 @@
+#!/usr/bin/ruby
+
+# =============================================================================
+# Converts arbitrary ip range (from..to) to set of CIDR network addresses
+# -----------------------------------------------------------------------------
+#
+# Examples:
+#
+# $ ./cidr.rb 10.0.0.1 10.0.1.33
+# 10.0.0.1/32
+# 10.0.0.2/31
+# 10.0.0.4/30
+# 10.0.0.8/29
+# 10.0.0.16/28
+# 10.0.0.32/27
+# 10.0.0.64/26
+# 10.0.0.128/25
+# 10.0.1.0/27
+# 10.0.1.32/31
+#
+# $ ./cidr.rb 10.0.0.2 10.0.0.7
+# 10.0.0.2/31
+# 10.0.0.4/30
+#
+# -----------------------------------------------------------------------------
+# Author: Michal Safranek (wejn at box dot cz)
+# License: MIT
+# Date: 20110214004000
+# =============================================================================
+
+module CIDRCompress
+    def inet_ntoa(n)
+        [n].pack("N").unpack("C*").join "."
+    end
+
+    def inet_aton(ip)
+        return ip.to_i if /^\d+$/ =~ ip
+        raise ArgumentError, "invalid IP: #{ip}" unless /^(\d+\.){3}\d+$/ =~ ip
+        ip.split(/\./).map{|c| c.to_i}.pack("C*").unpack("N").first
+    end
+
+    def ranges_for(f, l, &b)
+
+        raise LocalJumpError, "no block given" unless block_given?
+
+        # auto-convert IPs
+        f = inet_aton(f) unless f.kind_of?(Integer)
+        l = inet_aton(l) unless l.kind_of?(Integer)
+
+        # flip first,last if first > last
+        f, l = l, f if f > l
+
+        # do the magic
+        log = (Math.log(l-f+1)/Math.log(2)).to_i # log10(x)/log10(2) == log2(x)
+        mask = 2**32 - 2**log
+
+        if f&mask == l&mask
+            b.call(inet_ntoa(f), 32-log)
+        else
+            ranges_for(f, (l&mask)-1, &b)
+            ranges_for(l&mask, l, &b)
+        end
+    end
+
+    # make it both includable and directly callable
+    class <<self; include CIDRCompress; end
+end
+
+if $0 == __FILE__
+    unless ARGV.size == 2
+        STDERR.puts "Usage: #{File.basename($0)} <first IP> <last IP>"
+        exit 1
+    end
+
+    CIDRCompress.ranges_for(ARGV.first, ARGV.last) do |a,m|
+        puts [a,m].join('/')
+    end
+end
+
