@@ -9,25 +9,25 @@ Bash <3
 
 Functionality
 =======
-1. Object-Group Subnetting Objects
-2. Object-Group Depurate (unused)
-3. ACL Misapplied
-4. ACL Without Apply
-5. ACL Shadow
+1. Object-Group Subnetting
+2. Object-Group Dummies (Unused)
+3. ACLS Misapplied (Wrong Routing)
+4. ACLS Dummies (Unused)
+5. ACLS Shadows (Duplicate)
 
 Compatibility (Tested)
 =======
 
 Cisco PIX Firewall (7.x/8.x)
+
 Cisco ASA Firewall (7.x/8.x)
+
 Cisco FWSM Firewall (3.x/4.x)
 
 Dependencies
 =======
 
-dos2unix
-ipcalc
-ruby
+dos2unix / ipcalc / ruby
 
 Generally: sudo yum install dos2unix ipcalc ruby
 

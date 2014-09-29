@@ -145,6 +145,8 @@ function portname_to_portnumber(){
 		"bootps" ) export portnumber=67 ;;
 		"tftp" ) export portnumber=69 ;;
 		"finger" ) export portnumber=79 ;;
+		"www" ) export portnumber=80 ;;
+		"https" ) export portnumber=443 ;;
 		"hostname" ) export portnumber=101 ;;
 		"sunrpc" ) export portnumber=111 ;;
 		"ident" ) export portnumber=113 ;;
@@ -341,7 +343,7 @@ do
 done < $FILE_CONFIG
 
 # POR CADA ARCHIVO PROCESO EL SUBNETEO
-TOTALGANADAS=0
+TOTAL_LINES_OBJECTGROUPS_SUBNETTING=0
 for i in `ls | grep OGDEPURA`
 do
 		## ME QUEDO EL NOMBRE DEL ARCHIVO CON EL GRUPO
@@ -369,7 +371,7 @@ do
 			TOTALELIMINAR=$(grep -v -w -f $SUBNET-NO $FILE_OB | grep -v -f $OGRESTO | sed 's/^/ no/' | wc -l)
 			TOTALAGREGAR=$(cat $SUBNET | wc -l)
 			TOTALGANADASXGRUPO=`expr $TOTALELIMINAR - $TOTALAGREGAR`
-			TOTALGANADAS=`expr $TOTALGANADAS + $TOTALGANADASXGRUPO`
+			TOTAL_LINES_OBJECTGROUPS_SUBNETTING=`expr $TOTAL_LINES_OBJECTGROUPS_SUBNETTING + $TOTALGANADASXGRUPO`
 			# ELIMINO ARCHIVOS CREADOS
 			rm -f $HOSTSSORT $OBTENGORANGOS $SUBNET $SUBNET-NO
 		fi
@@ -377,20 +379,22 @@ do
 		echo "" | tee -a $FILE_OUTPUT
         rm -f $FILE_OB $OGRESTO
 done
+
 # MUESTRO TOTAL DE LINEAS GANADAS
 echo "" | tee -a $FILE_OUTPUT
-echo "TOTAL DE LINEAS GANADAS: $TOTALGANADAS" | tee -a $FILE_OUTPUT
+echo "TOTAL DE LINEAS GANADAS POR SUBNETEO DE OBJECT-GROUPS: $TOTAL_LINES_OBJECTGROUPS_SUBNETTING" | tee -a $FILE_OUTPUT
+echo "TOTAL LINES WON BY OBJECT-GROUPS SUBNETTING: $TOTAL_LINES_OBJECTGROUPS_SUBNETTING" | tee -a $FILE_OUTPUT
 
 ########################################################################################################################
-# OBJECT-GROUP DEPURATE (UNUSED)
+# OBJECT-GROUPS DEPURATE (UNUSED)
 ########################################################################################################################
 echo "" | tee -a $FILE_OUTPUT
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
-echo "OBJECT-GROUP DEPURATE (UNUSED) / OBJECT-GROUPS NO UTILIZADOS" | tee -a $FILE_OUTPUT
+echo "OBJECT-GROUPS DUMMIES (UNUSED) / OBJECT-GROUPS NO UTILIZADOS" | tee -a $FILE_OUTPUT
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 echo ""| tee -a $FILE_OUTPUT
 
-TOTALGRUPOSAELIMINAR=0
+TOTAL_LINES_OBJECTGROUPS_UNUSED=0
 while read line_a
 do
 	# CHEQUEO GRUPOS TIPO NETWORK
@@ -399,7 +403,7 @@ do
 		CONFIG_OGNAME=$(cat $FILE_CONFIG | grep $OGNAME | grep -v "object-group network")
 		if [[ -z "$CONFIG_OGNAME" ]] ; then
 			echo no $line_a | tee -a $FILE_OUTPUT
-			((TOTALGRUPOSAELIMINAR++))
+			((TOTAL_LINES_OBJECTGROUPS_UNUSED++))
 		fi
 	fi
 	# CHEQUEO GRUPOS TIPO SERVICE
@@ -408,20 +412,21 @@ do
 		CONFIG_OGNAME=$(cat $FILE_CONFIG | grep $OGNAME | grep -v "object-group service")
 		if [[ -z "$CONFIG_OGNAME" ]] ; then
 			echo no $line_a | tee -a $FILE_OUTPUT
-			((TOTALGRUPOSAELIMINAR++))
+			((TOTAL_LINES_OBJECTGROUPS_UNUSED++))
 		fi
 	fi
 done < $FILE_CONFIG
 
 # MUESTRO TOTAL DE GRUPOS A ELIMINAR
 echo "" | tee -a $FILE_OUTPUT
-echo "TOTAL DE LINEAS GANADAS: $TOTALGRUPOSAELIMINAR" | tee -a $FILE_OUTPUT
+echo "TOTAL DE LINEAS GANADAS POR OBJECT-GROUPS SIN USO: $TOTAL_LINES_OBJECTGROUPS_UNUSED" | tee -a $FILE_OUTPUT
+echo "TOTAL LINES WON BY OBJECT-GROUPS DUMMIES (UNUSED): $TOTAL_LINES_OBJECTGROUPS_UNUSED" | tee -a $FILE_OUTPUT
 
 ########################################################################################################################
 # ACL MISSAPLIED / ACL MAL APLICADAS
 ########################################################################################################################
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
-echo " ACL MISSAPLIED / ACL MAL APLICADAS" | tee -a $FILE_OUTPUT
+echo " ACLS MISSAPLIED / ACLS MAL APLICADAS" | tee -a $FILE_OUTPUT
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 
 ######## Reconozco Interfaces
@@ -497,7 +502,7 @@ echo ""
 echo "                       DO THE MAGIC !!!!! :-)"
 echo "" | tee -a $FILE_OUTPUT
 
-CONTAR=0
+TOTAL_LINES_ACLS_MISSAPLIED=0
 
 for index in ${!INTS[*]}
 do
@@ -526,7 +531,7 @@ do
 						CHECK=$(chequear_ruteo $ORIGEN ${INTS[$index]})
 						if [ ! "$CHECK" == "1" ] ; then
 								echo no $line | tee -a $FILE_OUTPUT
-								((CONTAR++))
+								((TOTAL_LINES_ACLS_MISSAPLIED++))
 						fi
 					fi
 				fi
@@ -540,13 +545,14 @@ rm -f TMP-INT-*
 
 # MUESTRO TOTAL DE ACLS A BORRAR
 echo "" | tee -a $FILE_OUTPUT
-echo "TOTAL DE LINEAS GANADAS: $CONTAR" | tee -a $FILE_OUTPUT
+echo "TOTAL DE LINEAS GANADAS POR ACLS MAL APLICADAS: $TOTAL_LINES_ACLS_MISSAPLIED" | tee -a $FILE_OUTPUT
+echo "TOTAL LINES WON BY ACLS MISSAPLIED: $TOTAL_LINES_ACLS_MISSAPLIED" | tee -a $FILE_OUTPUT
 
 ########################################################################################################################
 # ACL Without Apply / ACL Sin Aplicar
 ########################################################################################################################
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
-echo " ACL Without Apply / ACL Sin Aplicar" | tee -a $FILE_OUTPUT
+echo " ACLS DUMMIES / ACLS SIN APLICAR" | tee -a $FILE_OUTPUT
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
 
@@ -567,7 +573,7 @@ done < $FILE_CONFIG
 ACLS=(`for R in "${ACLS[@]}" ; do echo "$R" ; done | sort -du`)
 
 # CUENTO ACLS A ELIMINAR
-ACLSAELIMINAR=0
+TOTAL_LINES_ACLS_NOAPPLY=0
 
 # CHEQUEOS
 for R in "${ACLS[@]}"
@@ -577,7 +583,7 @@ do
 	if 	[[ -z $(cat $FILE_CONFIG | grep "access-group $R ") ]]; then
 		echo " NO SE ENCONTRO ACCESS-GROUP !" | tee -a $FILE_OUTPUT
 		cat $FILE_CONFIG | grep $R | sed 's/^/ no  /' | tee -a $FILE_OUTPUT
-		ACLSAELIMINAR=$(($ACLSAELIMINAR+$(cat $FILE_CONFIG | grep $R | wc -l)))
+		TOTAL_LINES_ACLS_NOAPPLY=$(($TOTAL_LINES_ACLS_NOAPPLY+$(cat $FILE_CONFIG | grep $R | wc -l)))
 		echo "" | tee -a $FILE_OUTPUT
 	else
 		echo " Ok" | tee -a $FILE_OUTPUT
@@ -585,30 +591,40 @@ do
 	echo "" | tee -a $FILE_OUTPUT
 done 
 
+# MUESTRO TOTAL DE LINEAS GANADAS
+echo "" | tee -a $FILE_OUTPUT
+echo "TOTAL DE LINEAS GANADAS POR ACLS SIN APLICAR: $TOTAL_LINES_ACLS_NOAPPLY" | tee -a $FILE_OUTPUT
+echo "TOTAL LINES WON BY ACLS WITHOUT APPLY: $TOTAL_LINES_ACLS_NOAPPLY" | tee -a $FILE_OUTPUT
+
 ########################################################################################################################
-# ACL Shadow
+# ACLS SHADOWS (DUPLICATE)
 ########################################################################################################################
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
-echo " ACL Shadow" | tee -a $FILE_OUTPUT
+echo " ACLS SHADOWS (DUPLICATE)" | tee -a $FILE_OUTPUT
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
 
 # CONTAR SHADOWS
-CONTARSHADOWS=0
+TOTAL_LINES_ACLS_SHADOWS=0
 
 # SHADOW BY DESTINATION NETWORK OR ANY, WITH EQ
 ## BUSCO ACLS CON DESTINO = RED, LUEGO BUSCO TODAS LAS QUE TIENEN MISMO ORIGEN, PUERTO Y PROTOCOLO, Y EL DESTINO ES UN HOST
 ## TAMBIEN BUSCO ACLS CON DESTINO ANY Y HAGO LO MISMO.
 
-echo " SHADOW BY DESTINATION NETWORK OR ANY, WITH EQ" | tee -a $FILE_OUTPUT
+echo " SHADOWS BY DESTINATION HOST, DESTINATION NETWORK OR DESTINATION ANY, WITH EQ" | tee -a $FILE_OUTPUT
+echo " SHADOWS POR DESTINO HOST, DESTINO NETWORK O DESTINO ANY, CON EQ" | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
 for R in "${ACLS[@]}"
 do 
 	FILE_TEMP=TMP-SHADOW-$R
+	FILE_TEMP_FILTER=$FILE_TEMP-FILTER
 	cat $FILE_CONFIG | grep "access-list $R " > $FILE_TEMP
+	# CUENTO LAS LINEAS, SOLO MATCHEO SI ES POSTERIOR.
+	LINE_NUMBER_ACL_SHADOW_DESTINATION=0
 	while read line_acl
 	do
-		if echo $line_acl | grep -q "eq " ; then
+		((LINE_NUMBER_ACL_SHADOW_DESTINATION++))
+		if echo $line_acl | grep -q " eq " ; then
 			DESTINO_IP=$(echo $line_acl | rev | cut -d" " -f 4 | rev)
 			DESTINO_MASK=$(echo $line_acl | rev | cut -d" " -f 3 | rev)
 			HASSHADOW=0
@@ -625,6 +641,8 @@ do
 				ORIGEN="$(echo $line_acl | rev | cut -d" " -f 6 | rev) $(echo $line_acl | rev | cut -d" " -f 5 | rev)"
 				# ANALIZO ACCION
 				ACTION=$(echo $line_acl | rev | cut -d" " -f 8 | rev)
+				# ARMO FILE, DESDE LA ACL ENCONTRADA, LO ANTERIOR NO IMPORTA.
+				tail -n +$LINE_NUMBER_ACL_SHADOW_DESTINATION $FILE_TEMP > $FILE_TEMP_FILTER
 				# BUSCO TODAS LAS ACLS QUE TIENE MISMO: PUERTO, PROTO Y ORIGEN, Y EL DESTINO ES UN HOST
 				while read line_acl_filter
 				do
@@ -640,11 +658,11 @@ do
 							if [ "$DESTINO_MASK_FILTER_TO_INT" -ge "$IP_INT" ] && [ "$BROADCAST_INT" -ge "$DESTINO_MASK_FILTER_TO_INT" ] ; then
 								HASSHADOW=1
 								echo "no $line_acl_filter" | tee -a $FILE_OUTPUT
-								((CONTARSHADOWS++))
+								((TOTAL_LINES_ACLS_SHADOWS++))
 							fi
 						fi						
 					fi		
-				done < $FILE_TEMP
+				done < $FILE_TEMP_FILTER
 				# MUESTRO ACL SI HAY FLAG
 				if [ "$HASSHADOW" = "1" ]; then
 					echo " > ACL: $line_acl" | tee -a $FILE_OUTPUT
@@ -658,6 +676,8 @@ do
 				PROTO=$(echo $line_acl | rev | cut -d" " -f 6 | rev)
 				ORIGEN="$(echo $line_acl | rev | cut -d" " -f 5 | rev) $(echo $line_acl | rev | cut -d" " -f 4 | rev)"
 				ACTION=$(echo $line_acl | rev | cut -d" " -f 7 | rev)
+				# ARMO FILE, DESDE LA ACL ENCONTRADA, LO ANTERIOR NO IMPORTA.
+				tail -n +$LINE_NUMBER_ACL_SHADOW_DESTINATION $FILE_TEMP > $FILE_TEMP_FILTER
 				# BUSCO TODAS LAS ACLS QUE TIENE MISMO PUERTO, ORIGEN Y PROTO
 				while read line_acl_filter
 				do
@@ -669,10 +689,10 @@ do
 						if [ "$PUERTO_FILTER" = "$PUERTO" ] && [ "$PROTO_FILTER" = "$PROTO" ] && [ "$ORIGEN_FILTER" = "$ORIGEN" ] && [ "$ACTION_FILTER" = "$ACTION" ] ; then
 							HASSHADOW=1
 							echo "no $line_acl_filter" | tee -a $FILE_OUTPUT
-							((CONTARSHADOWS++))							
+							((TOTAL_LINES_ACLS_SHADOWS++))							
 						fi
 					fi
-				done < $FILE_TEMP
+				done < $FILE_TEMP_FILTER
 				# MUESTRO ACL SI HAY FLAG
 				if [ "$HASSHADOW" = "1" ]; then
 					echo " > ACL: $line_acl" | tee -a $FILE_OUTPUT
@@ -681,7 +701,7 @@ do
 			fi
 		fi
 	done < $FILE_TEMP
-	rm -f $FILE_TEMP
+	rm -f $FILE_TEMP $FILE_TEMP_FILTER
 done
 
 # SHADOW BY SOURCE NETWORK OR ANY, WITH EQ
@@ -689,15 +709,20 @@ done
 ## ANALIZO SI ESE HOST, ESTA COMPRENDIDO EN LA RED.
 ## TAMBIEN BUSCO ACLS CON ORIGEN ANY Y HAGO LO MISMO.
 
-echo " SHADOW BY SOURCE NETWORK OR ANY, WITH EQ" | tee -a $FILE_OUTPUT
+echo " SHADOW BY SOURCE HOST, SOURCE NETWORK OR SOURCE ANY, WITH EQ" | tee -a $FILE_OUTPUT
+echo " SHADOW POR ORIGEN HOST, ORIGEN NETWORK O ORIGEN ANY, CON EQ" | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
 for R in "${ACLS[@]}"
 do 
 	FILE_TEMP=TMP-SHADOW-$R
+	FILE_TEMP_FILTER=$FILE_TEMP-FILTER
 	cat $FILE_CONFIG | grep "access-list $R " > $FILE_TEMP
+	# CUENTO LAS LINEAS, SOLO MATCHEO SI ES POSTERIOR.
+	LINE_NUMBER_ACL_SHADOW_SOURCE=0
 	while read line_acl
 	do
-		if echo $line_acl | grep -q "eq " ; then
+		((LINE_NUMBER_ACL_SHADOW_SOURCE++))
+		if echo $line_acl | grep -q " eq " ; then
 			ORIGEN_IP=$(echo $line_acl | rev | cut -d" " -f 6 | rev)
 			ORIGEN_MASK=$(echo $line_acl | rev | cut -d" " -f 5 | rev)
 			HASSHADOW=0
@@ -714,6 +739,8 @@ do
 				DESTINO="$(echo $line_acl | rev | cut -d" " -f 4 | rev) $(echo $line_acl | rev | cut -d" " -f 3 | rev)"
 				# ANALIZO ACTION
 				ACTION=$(echo $line_acl | rev | cut -d" " -f 8 | rev)
+				# ARMO FILE, DESDE LA ACL ENCONTRADA, LO ANTERIOR NO IMPORTA.
+				tail -n +$LINE_NUMBER_ACL_SHADOW_SOURCE $FILE_TEMP > $FILE_TEMP_FILTER
 				# BUSCO TODAS LAS ACLS QUE TIENE MISMO: PUERTO, PROTO Y DESTINO, Y EL ORIGEN ES UN HOST
 				while read line_acl_filter
 				do
@@ -729,11 +756,11 @@ do
 							if [ "$ORIGEN_MASK_FILTER_TO_INT" -ge "$IP_INT" ] && [ "$BROADCAST_INT" -ge "$ORIGEN_MASK_FILTER_TO_INT" ] ; then
 								HASSHADOW=1
 								echo "no $line_acl_filter" | tee -a $FILE_OUTPUT
-								((CONTARSHADOWS++))
+								((TOTAL_LINES_ACLS_SHADOWS++))
 							fi
 						fi
 					fi
-				done < $FILE_TEMP
+				done < $FILE_TEMP_FILTER
 				# MUESTRO ACL SI HAY FLAG
 				if [ "$HASSHADOW" = "1" ]; then
 					echo " > ACL: $line_acl" | tee -a $FILE_OUTPUT
@@ -747,6 +774,8 @@ do
 				PROTO=$(echo $line_acl | rev | cut -d" " -f 6 | rev)
 				DESTINO="$(echo $line_acl | rev | cut -d" " -f 4 | rev) $(echo $line_acl | rev | cut -d" " -f 3 | rev)"
 				ACTION=$(echo $line_acl | rev | cut -d" " -f 7 | rev)
+				# ARMO FILE, DESDE LA ACL ENCONTRADA, LO ANTERIOR NO IMPORTA.
+				tail -n +$LINE_NUMBER_ACL_SHADOW_SOURCE $FILE_TEMP > $FILE_TEMP_FILTER
 				# BUSCO TODAS LAS ACLS QUE TIENE MISMO PUERTO, PROTO Y DESTINO
 				while read line_acl_filter
 				do
@@ -758,10 +787,10 @@ do
 						if [ "$PUERTO_FILTER" = "$PUERTO" ] && [ "$PROTO_FILTER" = "$PROTO" ] && [ "$DESTINO_FILTER" = "$DESTINO" ] && [ "$ACTION_FILTER" = "$ACTION" ]; then
 							HASSHADOW=1
 							echo "no $line_acl_filter" | tee -a $FILE_OUTPUT
-							((CONTARSHADOWS++))
+							((TOTAL_LINES_ACLS_SHADOWS++))
 						fi
 					fi
-				done < $FILE_TEMP
+				done < $FILE_TEMP_FILTER
 				# MUESTRO ACL SI HAY FLAG
 				if [ "$HASSHADOW" = "1" ]; then
 					echo " > ACL: $line_acl" | tee -a $FILE_OUTPUT
@@ -770,45 +799,50 @@ do
 			fi
 		fi
 	done < $FILE_TEMP
-	rm -f $FILE_TEMP
+	rm -f $FILE_TEMP $FILE_TEMP_FILTER
 done
 
 # SHADOW POR RANGO
 # SHADOW BY RANGE
 ## BUSCO ACLS CON PUERTO EN RANGE, Y DESPUES BUSCO MISMO ORIGEN, DESTINO, PUERTO Y PROTO CON EQ QUE LO CONTENGA
 
-echo " SHADOW POR RANGO" | tee -a $FILE_OUTPUT
-echo " SHADOW BY RANGE" | tee -a $FILE_OUTPUT
+echo " SHADOWS POR RANGO DE PUERTOS" | tee -a $FILE_OUTPUT
+echo " SHADOWS BY RANGE PORTS" | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
 for R in "${ACLS[@]}"
 do 
 	FILE_TEMP=TMP-SHADOW-$R
+	FILE_TEMP_FILTER=$FILE_TEMP-FILTER
 	cat $FILE_CONFIG | grep "access-list $R " > $FILE_TEMP
+	# CUENTO LAS LINEAS, SOLO MATCHEO SI ES POSTERIOR.
+	LINE_NUMBER_ACL_SHADOW_RANGE=0
 	while read line_acl
 	do
+		((LINE_ACL_SHADOW_RANGE_NUMBER++))
 		if echo $line_acl | grep -q  "range " ; then
 			# ANALIZO RANGO DE PUERTOS
-			FIRT_PORT=$(echo $line_acl | rev | cut -d" " -f 2 | rev)
+			FIRST_PORT=$(echo $line_acl | rev | cut -d" " -f 2 | rev)
+			if ! [[ "$FIRST_PORT" =~ ^-?[0-9]+$ ]]; then
+				FIRST_PORT=$(portname_to_portnumber $FIRST_PORT)
+			fi
 			LAST_PORT=$(echo $line_acl | rev | cut -d" " -f 1 | rev)
+			if ! [[ "$LAST_PORT" =~ ^-?[0-9]+$ ]]; then
+				LAST_PORT=$(portname_to_portnumber $LAST_PORT)
+			fi
 			HASSHADOW=0
-			# ANALIZO PROTO, ORIGEN Y DESTINO
+			# ANALIZO PROTO
 			PROTO=$(echo $line_acl | rev | cut -d" " -f 8 | rev)
+			# ANALIZO ORIGEN Y DESTINO (2 PARTES CADA UNO)
 			DESTINO="$(echo $line_acl | rev | cut -d" " -f 5 | rev) $(echo $line_acl | rev | cut -d" " -f 4 | rev)"
-			DESTINO=$(echo ${DESTINO//[[:blank:]]/})
-			if ! [[ "$DESTINO" =~ ^-?[0-9]+$ ]]; then
-				DESTINO=$(portname_to_portnumber $DESTINO)
-			fi
 			ORIGEN="$(echo $line_acl | rev | cut -d" " -f 7 | rev) $(echo $line_acl | rev | cut -d" " -f 6 | rev)"
-			ORIGEN=$(echo ${ORIGEN//[[:blank:]]/})
-			if ! [[ "$ORIGEN" =~ ^-?[0-9]+$ ]]; then
-				ORIGEN=$(portname_to_portnumber $ORIGEN)
-			fi
 			# ANALIZO ACTION
 			ACTION=$(echo $line_acl | rev | cut -d" " -f 9 | rev)
+			# ARMO FILE, DESDE LA ACL ENCONTRADA, LO ANTERIOR NO IMPORTA.
+			tail -n +$LINE_ACL_SHADOW_RANGE_NUMBER $FILE_TEMP > $FILE_TEMP_FILTER
 			# BUSCO TODAS LAS ACLS QUE TIENE MISMO ORIGEN, DESTINO Y PROTO Y PUERTO EQ (Y EL PUERTO ESTA COMPRENDIDO EN EL RANGO)
 			while read line_acl_filter
 			do
-				if (echo $line_acl_filter | grep -qv "$line_acl") && (echo $line_acl_filter | grep -q "eq "); then
+				if (echo $line_acl_filter | grep -qv "$line_acl") && (echo $line_acl_filter | grep -q " eq "); then
 					PROTO_FILTER=$(echo $line_acl_filter | rev | cut -d" " -f 7 | rev)
 					DESTINO_FILTER="$(echo $line_acl_filter | rev | cut -d" " -f 4 | rev) $(echo $line_acl_filter | rev | cut -d" " -f 3 | rev)"
 					ORIGEN_FILTER="$(echo $line_acl_filter | rev | cut -d" " -f 6 | rev) $(echo $line_acl_filter | rev | cut -d" " -f 5 | rev)"
@@ -818,14 +852,14 @@ do
 						PUERTO_FILTER=$(portname_to_portnumber $PUERTO_FILTER)
 					fi
 					if [ "$PROTO_FILTER" = "$PROTO" ] && [ "$DESTINO_FILTER" = "$DESTINO" ] && [ "$ORIGEN_FILTER" = "$ORIGEN" ] && [ "$ACTION_FILTER" = "$ACTION" ]; then
-						if [ "$PUERTO_FILTER" -ge "$FIRT_PORT" ] && [ "$LAST_PORT" -ge "$PUERTO_FILTER" ] ; then
+						if [ "$PUERTO_FILTER" -ge "$FIRST_PORT" ] && [ "$LAST_PORT" -ge "$PUERTO_FILTER" ] ; then
 							HASSHADOW=1
 							echo "no $line_acl_filter" | tee -a $FILE_OUTPUT
-							((CONTARSHADOWS++))
-						fi					
+							((TOTAL_LINES_ACLS_SHADOWS++))
+						fi
 					fi
 				fi
-			done < $FILE_TEMP
+			done < $FILE_TEMP_FILTER
 			# MUESTRO ACL SI HAY FLAG
 			if [ "$HASSHADOW" = "1" ]; then
 				echo " > ACL: $line_acl" | tee -a $FILE_OUTPUT
@@ -833,8 +867,13 @@ do
 			fi
 		fi
 	done < $FILE_TEMP	
-	rm -f $FILE_TEMP
+	rm -f $FILE_TEMP $FILE_TEMP_FILTER
 done
+
+# MUESTRO TOTAL DE LINEAS GANADAS
+echo "" | tee -a $FILE_OUTPUT
+echo "TOTAL DE LINEAS GANADAS POR ACLS SHADOW: $TOTAL_LINES_ACLS_SHADOWS" | tee -a $FILE_OUTPUT
+echo "TOTAL LINES WON BY ACLS SHADOW: $TOTAL_LINES_ACLS_SHADOWS" | tee -a $FILE_OUTPUT
 
 # TO DO: SHADOW POR DENY
 
@@ -844,12 +883,12 @@ done
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 echo "End. Count:" | tee -a $FILE_OUTPUT
 echo "" | tee -a $FILE_OUTPUT
-echo " 1. Object-Group Subnetting Objects: $TOTALGANADAS" | tee -a $FILE_OUTPUT
-echo " 2. Object-Group Depurate (unused): $TOTALGRUPOSAELIMINAR" | tee -a $FILE_OUTPUT
-echo " 3. ACL Misapplied: $CONTAR" | tee -a $FILE_OUTPUT
-echo " 4. ACL Without Apply: $ACLSAELIMINAR" | tee -a $FILE_OUTPUT
-echo " 5. ACL Shadow: $CONTARSHADOWS" | tee -a $FILE_OUTPUT
-echo " --> Total Lines: $(($TOTALGANADAS+$TOTALGRUPOSAELIMINAR+$CONTAR+$ACLSAELIMINAR+$CONTARSHADOWS)) "
+echo " 1. Object-Group Subnetting: $TOTAL_LINES_OBJECTGROUPS_SUBNETTING" | tee -a $FILE_OUTPUT
+echo " 2. Object-Group Dummies (Unused): $TOTAL_LINES_OBJECTGROUPS_UNUSED" | tee -a $FILE_OUTPUT
+echo " 3. ACLS Misapplied (Wrong Routing): $TOTAL_LINES_ACLS_MISSAPLIED" | tee -a $FILE_OUTPUT
+echo " 4. ACLS Dummies (Unused): $TOTAL_LINES_ACLS_NOAPPLY" | tee -a $FILE_OUTPUT
+echo " 5. ACLS Shadows (Duplicate): $TOTAL_LINES_ACLS_SHADOWS" | tee -a $FILE_OUTPUT
+echo " --> Total Won Lines: $(($TOTAL_LINES_OBJECTGROUPS_SUBNETTING+$TOTAL_LINES_OBJECTGROUPS_UNUSED+$TOTAL_LINES_ACLS_MISSAPLIED+$TOTAL_LINES_ACLS_NOAPPLY+$TOTAL_LINES_ACLS_SHADOWS)) "
 echo ---------------------------------------------------------------------- | tee -a $FILE_OUTPUT
 echo "Output File: $FILE_OUTPUT"
 echo "" | tee -a $FILE_OUTPUT
