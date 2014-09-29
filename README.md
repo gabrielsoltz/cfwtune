@@ -35,7 +35,7 @@ How To
 =======
 You need From Your Firewall:
 
-show running config / show tech > shrun.txt
+show running config or show tech > shrun.txt
 
 show route > shroute.txt
 
