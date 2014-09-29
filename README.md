@@ -33,12 +33,12 @@ Generally: sudo yum install dos2unix ipcalc ruby
 
 How To
 =======
-1. You need From Your Firewall:
+You need From Your Firewall:
 
 show running config / show tech > shrun.txt
 
 show route > shroute.txt
 
-2. Execute:
+EXECUTE:
 
 ./cfwtune shroute.txt shrun.txt
