@@ -35,7 +35,9 @@ How To
 =======
 1. You need From Your Firewall:
 show running config / show tech > shrun.txt
+
 show route > shroute.txt
 
 2. Execute:
+
 ./cfwtune shroute.txt shrun.txt
