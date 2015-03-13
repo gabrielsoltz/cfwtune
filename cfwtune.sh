@@ -8,6 +8,7 @@ CFWTUNE_AUTHOR="Gabriel Soltz"
 CFWTUNE_CONTACT="thegaby@gmail.com"
 CFWTUNE_DATE="September 2014"
 CFWTUNE_GIT="https://github.com/gabrielsoltz/cfwtune"
+CFWTUNE_WEB="www.3ops.com"
 ########################################################################################################################
 
 ########################################################################################################################
